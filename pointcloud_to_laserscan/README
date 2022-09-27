@@ -1,0 +1,33 @@
+
+This package contains the original pointcloud to laserscan from Paul Bovbel and a new improved version from Fraunhofer IPA.
+The improvements are in form of strongly reduced computational time for the laserscan creation as described in detail below,
+and some added functionality also presented in detail below.
+
+The procedure for converting the pointcloud to a laserscan follows the following principle roughly:
+  1. Make sure the transformation between the original frame (frame of the pointcloud) and the goal frame (frame of the scan) is available
+  2. Find the points that are within the specified region
+  3. Translate the relevant point to scan coordinates
+  4. Update scan if range of new point is shorter than current range for the same angle
+
+
+
+The two versions of pointcloud to laserscan (pointcloud_to_laserscan_nodelet and ipa_pointcloud_to_laserscan_nodelet) differs in the following ways:
+ * The IPA version converts the borders for the point selection to the original coordinates and does so avoid further processing of points that are outside the selected borders. Thsi savers a lot of computational time compared to the original version where the complete pointcloud was transformed.
+
+ * The ipa version if not based on MessageFilters. This choise was made due to the problem that the message filter stops generating cloud callbacks completely after an arbitrary amout of time (mostely after at least 30 min oparation). We have not had time to investigate the problem further but the effect is removed by not using the Message filter interface. 
+
+ * The ipa version applies an additional outlier filter to the created scan. The filter is configured and called directly in the cloud callback and can be configured and activated/deactivated over parameter cofiguartions. This filter was implemented becaue of the noise clusters in the kinnect pointcloud. More about the filter below.
+
+Using the ipa version without the outlier filter activated should result in exactly the same scans as the original version (only faster). We have however not had time to test this extensively enough to assure correctness of this statement.
+
+
+
+The scan_outlier_removal_filter removes noise clusters with much smaller range than the surrounding points. The filter can be configured with the following three parameters cluster_break_distance, max_noise_cluster_size, max_noise_cluster_distance. 
+This filter was constructed to handle noise clusters detected in the kinnect pointcloud. Those noise clusters are in form of false clusters of 15-35 points sporadically occuring at distances of up to a couple of meters in fromt of the sensor. They seems to be caused by reflection phenomenas in the environment. Finding and removing the clusters in the pointcloud was taking to much computational time. Standard statistical filters not applicabe du to the relatively large cluster size. The constructed filter removes the effect in the constructed scan so that this can be used for freespace generation and navigation.
+
+
+The roi_outlier_removal_nodelet creates a new pointcloud only containing the points that are within the specified region of intereset. The region of interest can be specified in any frame as long as the transformation to the pointcloud frame is known by the tf tree. The reduced pointcloud is given in the same frame as the original pointcloud. The point selection algorithm is the same as used within the ipa pointcloud to laserscan nodelet. This filter should be moved out of this package in the future since this functionality is not directly related to the cloud to scan functionality. For not it is a useful tool if one want to use external pointcloud filters befor constructing the scan, but want to save resources by only filtering a reduced pointcloud. 
+
+A useful method for getting a decent scan out of a noisy pointcloud is: roi_outlier_removal -> statistical pcl filter -> ipa_pointcloud_to_laserscan (using outlier_remval_filer).
+
+The frame_publisher publishes a new frame spatialy aligned with the specified base_frame but with the specified rotations from the rotation_frame. This node should not be inside this package.

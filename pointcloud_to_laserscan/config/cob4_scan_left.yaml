@@ -1,0 +1,47 @@
+# -----------------Scan construction settings --------------
+# The target frame of the generated scan
+target_frame: base_link # Leave disabled to output scan in pointcloud frame
+
+# Pointcloud reduction parameters to define which points to use 
+# scan construction.
+# The combination of borders defines a cylinder in the target frame.
+# Only points within that cylinder (between all max and min borders)
+# are used for the scan creation.
+
+# z axis borders [meters] in target frame
+min_height: 0.15
+max_height: 1.5
+
+# angle [radians] borders in x-y-plane of target frame
+angle_min: 0.03
+angle_max: 0.78
+angle_increment: 0.008
+
+# range [meters] borders to the z axis of the target frame
+range_min: 0.25
+range_max: 10.0
+
+# other scan construction settings
+transform_tolerance: 0.05
+scan_time: 0.003333
+use_inf: true
+# Concurrency level, affects number of pointclouds queued for processing and number of threads used
+# 0 : Detect number of cores
+# 1 : Single threaded
+# 2->inf : Parallelism level
+concurrency_level: 0
+
+
+# ------------- Scan filter settings ----------------- 
+# Settings for the outlier filter applied to the constructed scan
+# flag to use outlier filter
+use_outlier_filter: true
+# set the max range that the cluster points can have in order for
+# the cluster to be counted as noise
+max_noise_cluster_distance: 2.5 # [meters]
+# The minimum range jump of two naighoring points to cause a
+# new cluster
+cluster_break_distance: 0.3 # [meters]
+# The maximum number of points in a cluster for it to be considered
+# a noise cluster
+max_noise_cluster_size: 10

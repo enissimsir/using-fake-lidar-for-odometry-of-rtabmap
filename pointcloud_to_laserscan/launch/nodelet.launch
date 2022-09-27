@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <arg name="nodelet_manager" default = "ipa_pointcloud_to_laserscan_node" />
+    <arg name="pointcloud_topic" default = "camera/depth_registered/points" />
+    <arg name="scan_topic" default = "camera/scan"/>
+
+     <!-- push pointcloud_to_laserscan nodelet into sensor's nodelet manager-->
+    <node pkg="nodelet" type="nodelet" name="ipa_pointcloud_to_laserscan" args="load pointcloud_to_laserscan/ipa_pointcloud_to_laserscan_nodelet $(arg nodelet_manager)">
+
+        <remap from="cloud_in" to="$(arg pointcloud_topic)"/>
+        <remap from="scan" to="$(arg scan_topic)"/>
+
+    </node>
+</launch>
